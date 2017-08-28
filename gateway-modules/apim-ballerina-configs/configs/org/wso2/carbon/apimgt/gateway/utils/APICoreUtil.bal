@@ -13,6 +13,7 @@ import ballerina.lang.strings;
 import ballerina.lang.files;
 import ballerina.lang.blobs;
 import org.wso2.carbon.apimgt.ballerina.util;
+
 function registerGateway () (json) {
     system:println("registerGateway() in APICoreUtil");
     json labelInfoPayload = {};
@@ -26,8 +27,15 @@ function registerGateway () (json) {
         response = http:ClientConnector.post(client, "/api/am/core/v1.0/gateways/register", request);
         gatewayConfig = messages:getJsonPayload(response);
 
+        system:println("gatewayConfig");
+        system:println(gatewayConfig);
+
         //Set gateway configuration into global cache
         dto:GatewayConfDTO gatewayConfDTO = fromJsonToGatewayConfDTO(gatewayConfig);
+
+        system:println("gatewayConfDTO");
+        system:println(gatewayConfDTO);
+
         holder:setGatewayConf(gatewayConfDTO);
     } catch (errors:Error error) {
         system:println("Error occurred while registering gateway in API Core. " + error.msg);
