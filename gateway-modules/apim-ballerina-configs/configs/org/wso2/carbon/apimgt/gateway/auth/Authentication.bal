@@ -71,13 +71,13 @@ function authenticate (message m) (boolean, message) {
     }
 
     if (resourceDto.authType == constants:AUTHENTICATION_TYPE_NONE) {
-    // set user as anonymous
-    // set throttling tier as unauthenticated
+        // set user as anonymous
+        // set throttling tier as unauthenticated
     }
 
     if (apiDto.securityScheme == 0) {
-    //pass request without authentication
-    //and return method
+        //pass request without authentication
+        //and return method
     }
 
     authHeader, authErr = extractHeaderWithName(constants:AUTHORIZATION, m);
@@ -92,7 +92,7 @@ function authenticate (message m) (boolean, message) {
         string authToken = strings:replace(authHeader, constants:BEARER, ""); //use split method instead
 
         if (strings:length(authToken) == 0) {
-        // token incorrect
+            // token incorrect
             gatewayUtil:constructAccessTokenNotFoundPayload(response);
             http:setStatusCode(response, 401);
             return false, response;
@@ -106,14 +106,14 @@ function authenticate (message m) (boolean, message) {
         }
 
         if (!introspectDto.active) {
-        // access token expired
+            // access token expired
             gatewayUtil:constructAccessTokenExpiredPayload(response);
             return false, response;
         }
 
         // if token had exp
         if (introspectDto.exp != -1) {
-        //put into cache
+            //put into cache
             holder:putIntoTokenCache(authToken, introspectDto);
         }
         if (introspectDto.username != "") {
@@ -153,7 +153,7 @@ function authenticate (message m) (boolean, message) {
                 response = m;
             }
         } else {
-        //subscription missing
+            //subscription missing
             gatewayUtil:constructSubscriptionNotFound(response);
             return false, response;
         }
@@ -244,10 +244,6 @@ function constructAPIKeyValidationDto (dto:SubscriptionDto subscriptionDto, dto:
     keyValidationInfoDTO.keyType = subscriptionDto.keyEnvType;
     keyValidationInfoDTO.subscriber = applicationDto.applicationOwner;
     keyValidationInfoDTO.resourcePath = resourceDto.uriTemplate;
-
-    system:println("keyValidationInfoDTO");
-    system:println(keyValidationInfoDTO);
-
     return keyValidationInfoDTO;
 }
 

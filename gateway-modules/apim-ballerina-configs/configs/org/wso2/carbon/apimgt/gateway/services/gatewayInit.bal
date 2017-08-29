@@ -10,9 +10,8 @@ service<http> gatewayInitService {
     boolean isCacheInitialized = holder:initializeCache();
     boolean isMapsAdded = holder:addThrottleMaps();
     boolean isReady = initGateway();
-
-    boolean offlineSubsInitialized = gatewayUtil:retrieveOfflineSubscriptions();
-    boolean offlineAppssInitialized = gatewayUtil:retrieveOfflineApplications();
+    boolean subscriptionsInitialized = gatewayUtil:retrieveSubscriptions();
+    boolean applicationsInitialized = gatewayUtil:retrieveApplications();
     boolean policiesInitialized = gatewayUtil:retrievePolicies();
 
 }
@@ -22,16 +21,12 @@ function initGateway () (boolean) {
     try {
         //Register gateway in API Core
         gatewayUtil:registerGateway();
-        // getGatewayConfig needed in keyManagerInfo, analyticsInfo & throttlingInfo
-
         //Retrieve APIs from API Core and deploy
-        //gatewayUtil:loadAPIs();
-        gatewayUtil:loadOfflineAPIs();
-        //gatewayUtil:loadGlobalEndpoints();
-        //gatewayUtil:loadBlockConditions();
+        gatewayUtil:loadAPIs();
+        gatewayUtil:loadGlobalEndpoints();
+        gatewayUtil:loadBlockConditions();
     } catch (errors:Error e) {
         system:println("Error while initilazing API gateway. " + e.msg);
     }
     return true;
 }
-
