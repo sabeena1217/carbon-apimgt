@@ -150,25 +150,15 @@ function retrieveOfflineSubscriptions () (boolean) {
     system:println("retrieveOfflineSubscriptions() in Utils");
     system:println("****************************************************************************************************************");
 
-    files:File t = {path:"/home/sabeena/Desktop/API Repo/retrieveOfflineSubscriptions.txt"};
+    files:File t = {path:"/home/sabeena/Desktop/API Repo/retrieveOfflineSubscriptions.json"};
     files:open(t, "r");
     var content, n = files:read(t, 100000000);
 
     string strSubsList = blobs:toString(content, "utf-8");
-    string[] array = strings:split(strSubsList, "\n");
-    system:println(array);
-    if(array.length % 9 == 0) {
-    int count = array.length / 9;
-    int index = 0;
-
-    while (index < count) {
-        dto:SubscriptionDto subs = returnSubscription(9 * index, array);
-        holders:putIntoSubscriptionCache(subs);
-        system:println(subs);
-        index = index + 1;
-    }
-    }
-
+    json subscriptions = jsons:parse(strSubsList);
+    system:println("subscriptions : ");
+    system:println(subscriptions);
+    putIntoSubscriptionCache(subscriptions.list);
     system:println("****************************************************************************************************************");
     return true;
 }
@@ -221,22 +211,25 @@ function returnResource(int i,string[] array)(dto:ResourceDto){
 function retrieveOfflineResources(string apiContext, string apiVersion){
     system:println("start retrieveOfflineResources() in Utils");
 
-    files:File t = {path:"/home/sabeena/Desktop/API Repo/retrieveOfflineResources.txt"};
+    files:File t = {path:"/home/sabeena/Desktop/API Repo/retrieveOfflineResources.json"};
     files:open(t, "r");
     var content, n = files:read(t, 100000000);
 
-    string strAPIList = blobs:toString(content, "utf-8");
-    string[] array = strings:split(strAPIList, "\n");
-    system:println(array);
+    string strResList = blobs:toString(content, "utf-8");
+    json resources = jsons:parse(strResList);
+    int length = jsons:getInt(resources, "$.list.length()");//Evaluates the JSONPath on a JSON object and returns the integer value.
+    int i = 0;
+    while (i < length) {
+        json resource1 = resources.list[i];
 
-    int index = 0;
-
-    while(index<6){
-        dto:ResourceDto res = returnResource(5*index,array);
-        holders:putIntoResourceCache(apiContext, apiVersion, res);
-        //system:println(res);
-        index = index + 1;
+        system:println("resource1  : ");
+        system:println(resource1);
+        holders:putIntoResourceCache(apiContext, apiVersion, fromJsonToResourceDto(resource1));
+        i = i + 1;
     }
+
+    system:println("resources :");
+    system:println(resources);
 
     system:println("end retrieveROfflineesources() in Utils");
 }
@@ -287,26 +280,24 @@ function retrieveOfflineApplications () (boolean) {
     system:println("retrieveOfflineApplications() in Utils");
     system:println("****************************************************************************************************************");
 
-    files:File t = {path:"/home/sabeena/Desktop/API Repo/retrieveOfflineApplications.txt"};
+    files:File t = {path:"/home/sabeena/Desktop/API Repo/retrieveOfflineApplications.json"};
     files:open(t, "r");
     var content, n = files:read(t, 100000000);
 
-    string strSubsList = blobs:toString(content, "utf-8");
-    string[] array = strings:split(strSubsList, "\n");
-    system:println(array);
-
-    if(array.length % 4 == 0) {
-        int count = array.length / 4;
-        int index = 0;
-
-        while (index < count) {
-            dto:ApplicationDto app = returnApplication(4* index, array);
-            holders:putIntoApplicationCache(app);
-            system:println(app);
-            index = index + 1;
+    string strAppsList = blobs:toString(content, "utf-8");
+    json applications = jsons:parse(strAppsList);
+    int length = jsons:getInt(applications, "$.list.length()");
+    int i = 0;
+    system:println("applications :");
+    system:println(applications);
+    if (length > 0) {
+        while (i < length) {
+            json application = applications.list[i];
+            putIntoApplicationCache(application);
+            //system:println(application);
+            i = i + 1;
         }
     }
-
     system:println("****************************************************************************************************************");
     return true;
 }

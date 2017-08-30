@@ -12,6 +12,7 @@ import org.wso2.carbon.apimgt.ballerina.util as apimgtUtil;
 import ballerina.lang.strings;
 import ballerina.lang.files;
 import ballerina.lang.blobs;
+import ballerina.lang.jsons;
 import org.wso2.carbon.apimgt.ballerina.util;
 
 function registerGateway () (json) {
@@ -139,46 +140,46 @@ function returnAPI(int i,string[] array)(dto:APIDTO){
 }
 function loadOfflineAPIs () {
     system:println("start loadOfflineAPIs() in APICoreUtil");
-    json apiList={};
 
-    files:File t = {path:"/home/sabeena/Desktop/API Repo/getOfflineAPIs.txt"};
+
+    files:File t = {path:"/home/sabeena/Desktop/API Repo/getOfflineAPIs.json"};
     files:open(t, "r");         //opens the file in the read mode
     var content, n = files:read(t, 100000000);
         //so there's a limit! only 100000000 can be read
 
     string strAPIList = blobs:toString(content, "utf-8");
-    string[] array = strings:split(strAPIList, "\n");
+    json apis=jsons:parse(strAPIList);
 
-    //system:println("array okay");
-    //system:println(array);
+    int index = 0;
+    errors:TypeCastError err;
+    int count;
+    count, err = (int)apis.count;
+    json apiList = apis.list;
 
-    var count,_ = <int>array[0];
-    apiList.count = count;
-//system:println(apiList);
-    //dto:APIDTO list = [];
-    int index=0;
+    system:println("loadofflineAPIs() in APICoreUtil");
+    system:println(apis);
+    system:println(apiList);
+    while (index < count) {
+        //for every API loaded this will run
 
-    while(index<count){
-        dto:APIDTO api = returnAPI(6*index,array);
-        //list[index] = api;
-
+        dto:APIDTO api = fromJSONToAPIDTO(apiList[index]);
+        system:println(apiList[index]);
+        //Retrieve API configuration
         string apiConfig;
         int status;
+        system:println("*******************************************************");
+        system:println("api :");
+        system:println(api);
+        system:println("api.id :");
+        system:println(api.id);
+        system:println("*******************************************************");
 
-       // system:println(api);
-
-        status, apiConfig = getOfflineAPIServiceConfig(api.id);
-
-        system:println("status");
-        system:println(status);
-        system:println("apiConfig");
-        system:println(apiConfig);
-
+        status, apiConfig = getAPIServiceConfig(api.id);
         int maxRetries = 3;
         int i = 0;
         while (status == Constants:NOT_FOUND) {
             apimgtUtil:wait(10000);
-            status, apiConfig = getOfflineAPIServiceConfig(api.id);
+            status, apiConfig = getAPIServiceConfig(api.id);
             i = i + 1;
             if (i > maxRetries) {
                 break;
@@ -188,13 +189,8 @@ function loadOfflineAPIs () {
         // deployService(api, apiConfig);
         //Update API cache
         holder:putIntoAPICache(api);
-
-        //system:println("ai me :(");
-
-        retrieveOfflineResources(api.context, api.version);
-
-        index = index+1;
-
+        retrieveResources(api.context, api.version);
+        index = index + 1;
     }
     system:println("end loadOfflineAPIs() in APICoreUtil");
 }
